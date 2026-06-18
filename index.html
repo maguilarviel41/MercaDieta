@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MercaDieta</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar">
+  <div class="logo">
+    <div class="logo-brand">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+      </div>
+      <span class="logo-name">MercaDieta</span>
+    </div>
+    <button class="logo-close" onclick="closeSidebar()">✕</button>
+  </div>
+  <nav class="nav" id="nav"></nav>
+  <div class="sidebar-foot">
+    <button class="nav-item" style="width:100%">
+      <span class="nav-icon">⚙️</span> Ajustes
+    </button>
+  </div>
+</aside>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<div class="main" id="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="hamburger" onclick="toggleSidebar()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="topbar-title" id="topbar-title">Inicio</div>
+    </div>
+    <div class="topbar-actions" id="topbar-actions"></div>
+  </div>
+
+  <div class="page active" id="page-dashboard"></div>
+  <div class="page" id="page-planner"></div>
+  <div class="page" id="page-recetas"></div>
+  <div class="page" id="page-alimentos"></div>
+  <div class="page" id="page-despensa"></div>
+  <div class="page" id="page-compra"></div>
+  <div class="page" id="page-ajustes"></div>
+</div>
+
+<!-- Modal busqueda -->
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <div class="modal-head">
+      <span>🔍</span>
+      <input id="modal-search" placeholder="Buscar alimento..." oninput="filterModal()">
+      <button class="btn btn-sm" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-results"></div>
+    <div class="modal-foot">
+      <span style="font-size:13px;color:var(--text2)">Cantidad (g/ml):</span>
+      <input type="number" id="modal-qty" value="100" min="1">
+      <button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="confirmAdd()">Añadir</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/db.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/planner.js"></script>
+<script src="js/alimentos.js"></script>
+<script src="js/despensa.js"></script>
+<script src="js/compra.js"></script>
+<script src="js/recetas.js"></script>
+<script src="js/ajustes.js"></script>
+<script src="js/app.js"></script>
+<script>
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('overlay');
+  const isMobile = window.innerWidth <= 768;
+  if (isMobile) {
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('open');
+  } else {
+    sidebar.classList.toggle('hidden');
+    document.getElementById('main').classList.toggle('full');
+  }
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+document.addEventListener('click', e => {
+  if (e.target.closest('.nav-item') && window.innerWidth <= 768) closeSidebar();
+});
+</script>
+
+</body>
+</html>
