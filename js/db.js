@@ -14,6 +14,8 @@ function load(key, def) {
 
 // ── Estado global ─────────────────────────────────────────────────────────
 let FOODS = [];
+let CATALOG = [];
+let CUSTOM_FOODS = load('custom_foods', []);
 
 const WEEK_DEFAULT = {
   Lun:{Desayuno:[],Comida:[],Cena:[],Snack:[]},
@@ -39,26 +41,38 @@ let RECIPES = load('recipes', [
 
 let PANTRY = load('pantry', []);
 
-// ── Cargar catalogo desde JSON ─────────────────────────────────────────────
+// ── Mapeo de producto ─────────────────────────────────────────────────────
+function mapProduct(p) {
+  return {
+    id: p.id,
+    name: p.name,
+    brand: p.brand || 'Hacendado',
+    kcal: parseFloat(p.kcal) || 0,
+    p: parseFloat(p.protein) || 0,
+    c: parseFloat(p.carbs) || 0,
+    f: parseFloat(p.fat) || 0,
+    price: parseFloat(p.price) || 0,
+    unit: p.unit || 'kg',
+    unit_size: parseFloat(p.unit_size) || 1,
+    bulk_price: parseFloat(p.bulk_price) || 0,
+    thumbnail: p.thumbnail || '',
+    ean: p.ean || '',
+    category: p.category || '',
+    ingredients: p.ingredients || '',
+    allergens: p.allergens || '',
+    description: p.description || '',
+  };
+}
+
+// ── Cargar catalogo con macros ─────────────────────────────────────────────
 function loadCatalog(onReady) {
   fetch('data/categorias_cache.json')
     .then(r => r.json())
     .then(data => {
-      FOODS = data.map(p => ({
-        id: p.id,
-        name: p.name,
-        brand: p.brand || 'Hacendado',
-        kcal: parseFloat(p.kcal) || 0,
-        p: parseFloat(p.protein) || 0,
-        c: parseFloat(p.carbs) || 0,
-        f: parseFloat(p.fat) || 0,
-        price: parseFloat(p.price) || 0,
-        unit: p.unit || 'kg',
-        unit_size: parseFloat(p.unit_size) || 1,
-        bulk_price: parseFloat(p.bulk_price) || 0,
-        thumbnail: p.thumbnail || '',
-        ean: p.ean || '',
-      }));
+      FOODS = data.map(p => mapProduct(p));
+      CUSTOM_FOODS.forEach(p => {
+        if (!FOODS.find(f => f.id === p.id)) FOODS.push(mapProduct(p));
+      });
       console.log('Catalogo cargado:', FOODS.length, 'productos');
       if (onReady) onReady();
     })
@@ -66,6 +80,18 @@ function loadCatalog(onReady) {
       console.warn('No se pudo cargar el catalogo');
       if (onReady) onReady();
     });
+}
+
+// ── Cargar catalogo completo sin macros ───────────────────────────────────
+function loadFullCatalog(onReady) {
+  if (CATALOG.length > 0) { onReady(CATALOG); return; }
+  fetch('data/catalogo_mercadona.json')
+    .then(r => r.json())
+    .then(data => {
+      CATALOG = data;
+      onReady(CATALOG);
+    })
+    .catch(() => onReady([]));
 }
 
 // ── Helpers macros ─────────────────────────────────────────────────────────
@@ -94,7 +120,6 @@ function getMealMacros(day, meal) {
 }
 
 // ── Despensa automática ───────────────────────────────────────────────────
-
 function pantryAdjust(foodId, delta) {
   const existing = PANTRY.find(p => p.foodId === foodId);
   const f = FOODS.find(x => x.id === foodId);
@@ -103,12 +128,10 @@ function pantryAdjust(foodId, delta) {
 
   if (existing) {
     existing.qty = Math.round((existing.qty + delta) * 10) / 10;
-    // Si qty baja de 0 → se acabó un pack, abrir el siguiente
     while (existing.qty < 0 && existing.packs > 0) {
       existing.packs--;
       existing.qty += packSize;
     }
-    // Si no quedan más packs → deficit
     if (existing.qty < 0) {
       existing.packs = Math.floor(existing.qty / packSize);
       existing.qty = existing.qty % packSize;

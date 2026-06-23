@@ -25,7 +25,7 @@ const PAGE_TITLES = {
 const PAGE_ACTIONS = {
   planner:   '<button class="btn btn-sm">Guardar dieta</button>',
   recetas:   '<button class="btn btn-primary btn-sm" onclick="openNewRecipeModal()">+ Nueva comida</button>',
-  alimentos: '<button class="btn btn-primary btn-sm">+ Anadir alimento</button>',
+  alimentos: '<button class="btn btn-primary btn-sm" onclick="openAddFoodModal()">+ Anadir alimento</button>',
   despensa:  '<button class="btn btn-primary btn-sm" onclick="addToPantryModal()">+ Anadir producto</button>',
 };
 
