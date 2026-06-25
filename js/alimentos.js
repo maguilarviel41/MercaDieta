@@ -38,46 +38,37 @@ function renderAlimentos(el) {
       <input id="food-search" placeholder="Buscar en todos los alimentos..." oninput="filterFoods()" value="${q}"/>
     </div>
     <div id="alimentos-content"></div>`;
-
-  if (q.trim().length >= 2) {
-    filterFoods();
-  } else if (alimentosCategory) {
-    renderCategoryProducts(alimentosCategory);
-  } else {
-    renderCategories();
-  }
+  if (q.trim().length >= 2) filterFoods();
+  else if (alimentosCategory) renderCategoryProducts(alimentosCategory);
+  else renderCategories();
 }
 
 function renderCategories() {
   const content = document.getElementById('alimentos-content');
   if (!content) return;
-
   const catsWithMacros = {};
   FOODS.forEach(f => {
     const cat = f.category || 'Otros';
     if (!catsWithMacros[cat]) catsWithMacros[cat] = 0;
     catsWithMacros[cat]++;
   });
-
   const catsTotal = {};
   (CATALOG || []).forEach(p => {
     const cat = p.category || 'Otros';
     if (!catsTotal[cat]) catsTotal[cat] = 0;
     catsTotal[cat]++;
   });
-
   const allCats = new Set([...Object.keys(catsWithMacros), ...Object.keys(catsTotal)]);
   const sorted = [...allCats].map(cat => ({
     cat,
     withMacros: catsWithMacros[cat] || 0,
     total: catsTotal[cat] || catsWithMacros[cat] || 0,
   })).sort((a,b) => b.total - a.total);
-
   content.innerHTML = `
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px">
       ${sorted.map(({cat, withMacros, total}) => `
         <div onclick="selectCategory('${cat.replace(/'/g,"\\'")}')"
-          style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 12px;text-align:center;cursor:pointer;transition:all 0.15s;position:relative"
+          style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 12px;text-align:center;cursor:pointer;transition:all 0.15s"
           onmouseover="this.style.borderColor='var(--green)';this.style.background='var(--green-light)'"
           onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--surface)'">
           <div style="font-size:32px;margin-bottom:8px">${getCategoryIcon(cat)}</div>
@@ -97,27 +88,20 @@ function selectCategory(cat) {
 function renderCategoryProducts(cat) {
   const content = document.getElementById('alimentos-content');
   if (!content) return;
-
   const withMacros = FOODS.filter(f => (f.category || 'Otros') === cat);
   const withMacrosIds = new Set(withMacros.map(f => f.id));
-
   content.innerHTML = `
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-      <button onclick="backToCategories()" style="background:none;border:1px solid var(--border);border-radius:var(--rs);padding:6px 12px;font-size:13px;cursor:pointer">
-        ← Categorias
-      </button>
+      <button onclick="backToCategories()" style="background:none;border:1px solid var(--border);border-radius:var(--rs);padding:6px 12px;font-size:13px;cursor:pointer">← Categorias</button>
       <span style="font-size:16px">${getCategoryIcon(cat)}</span>
       <div>
         <div style="font-size:15px;font-weight:600">${cat}</div>
-        <div style="font-size:12px;color:var(--text3)" id="cat-count">${withMacros.length} productos con macros · cargando catalogo...</div>
+        <div style="font-size:12px;color:var(--text3)" id="cat-count">${withMacros.length} productos con macros · cargando...</div>
       </div>
     </div>
     <div class="foods-grid" id="foods-grid">${renderFoodCards(withMacros, [])}</div>`;
-
   loadFullCatalog(catalog => {
-    const withoutMacros = catalog.filter(p =>
-      (p.category || 'Otros') === cat && !withMacrosIds.has(p.id)
-    );
+    const withoutMacros = catalog.filter(p => (p.category || 'Otros') === cat && !withMacrosIds.has(p.id));
     const grid = document.getElementById('foods-grid');
     const countEl = document.getElementById('cat-count');
     if (grid) grid.innerHTML = renderFoodCards(withMacros, withoutMacros);
@@ -190,7 +174,6 @@ function renderFoodCards(withMacros, withoutMacros) {
 function openProductModal(foodId, hasMacros) {
   const f = hasMacros ? FOODS.find(x => x.id === foodId) : (CATALOG||[]).find(x => x.id === foodId);
   if (!f) return;
-
   let modal = document.getElementById('product-modal');
   if (!modal) {
     modal = document.createElement('div');
@@ -199,30 +182,16 @@ function openProductModal(foodId, hasMacros) {
     modal.onclick = e => { if (e.target === modal) modal.classList.remove('open'); };
     document.body.appendChild(modal);
   }
-
   const macrosHTML = hasMacros ? `
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">
-      <div style="text-align:center;background:var(--bg);border-radius:var(--rs);padding:10px">
-        <div style="font-size:20px;font-weight:700;color:#f59e0b">${f.kcal||'—'}</div>
-        <div style="font-size:10px;color:var(--text3)">kcal</div>
-      </div>
-      <div style="text-align:center;background:var(--bg);border-radius:var(--rs);padding:10px">
-        <div style="font-size:20px;font-weight:700;color:#3b82f6">${f.p||f.protein||'—'}g</div>
-        <div style="font-size:10px;color:var(--text3)">proteina</div>
-      </div>
-      <div style="text-align:center;background:var(--bg);border-radius:var(--rs);padding:10px">
-        <div style="font-size:20px;font-weight:700;color:#10b981">${f.c||f.carbs||'—'}g</div>
-        <div style="font-size:10px;color:var(--text3)">carbos</div>
-      </div>
-      <div style="text-align:center;background:var(--bg);border-radius:var(--rs);padding:10px">
-        <div style="font-size:20px;font-weight:700;color:#ef4444">${f.f||f.fat||'—'}g</div>
-        <div style="font-size:10px;color:var(--text3)">grasa</div>
-      </div>
+      <div style="text-align:center;background:var(--bg);border-radius:var(--rs);padding:10px"><div style="font-size:20px;font-weight:700;color:#f59e0b">${f.kcal||'—'}</div><div style="font-size:10px;color:var(--text3)">kcal</div></div>
+      <div style="text-align:center;background:var(--bg);border-radius:var(--rs);padding:10px"><div style="font-size:20px;font-weight:700;color:#3b82f6">${f.p||f.protein||'—'}g</div><div style="font-size:10px;color:var(--text3)">proteina</div></div>
+      <div style="text-align:center;background:var(--bg);border-radius:var(--rs);padding:10px"><div style="font-size:20px;font-weight:700;color:#10b981">${f.c||f.carbs||'—'}g</div><div style="font-size:10px;color:var(--text3)">carbos</div></div>
+      <div style="text-align:center;background:var(--bg);border-radius:var(--rs);padding:10px"><div style="font-size:20px;font-weight:700;color:#ef4444">${f.f||f.fat||'—'}g</div><div style="font-size:10px;color:var(--text3)">grasa</div></div>
     </div>` : `
     <div style="background:#fef3c7;border-radius:var(--rs);padding:10px;font-size:13px;color:#92400e;margin-bottom:16px">
       Sin macros — <button onclick="openUnlockModal('${f.id}')" style="background:none;border:none;color:var(--green);font-weight:600;cursor:pointer">Añadir macros</button>
     </div>`;
-
   modal.innerHTML = `
     <div class="modal" style="width:520px;max-height:85vh;overflow-y:auto">
       <div class="modal-head">
@@ -250,13 +219,13 @@ function openProductModal(foodId, hasMacros) {
         ${f.suppliers?.length ? `<div style="margin-bottom:12px"><div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Proveedor</div><div style="font-size:12px;color:var(--text2)">${f.suppliers.join(', ')}</div></div>` : ''}
         <div style="display:flex;gap:8px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
           ${hasMacros
-            ? `<button class="btn btn-primary" style="flex:1" onclick="addToPantryModal('${f.id}');document.getElementById('product-modal').classList.remove('open')">+ Añadir a despensa</button>`
+            ? `<button class="btn btn-primary" style="flex:1" onclick="addToPantryModal('${f.id}');document.getElementById('product-modal').classList.remove('open')">+ Añadir a despensa</button>
+               <button class="btn" onclick="editFoodMacros('${f.id}')">✏️ Editar</button>`
             : `<button class="btn btn-primary" style="flex:1" onclick="openUnlockModal('${f.id}')">🔓 Añadir macros</button>`}
           ${f.share_url ? `<a href="${f.share_url}" target="_blank" class="btn" style="text-decoration:none">Ver en Mercadona ↗</a>` : ''}
         </div>
       </div>
     </div>`;
-
   modal.classList.add('open');
 }
 
@@ -264,7 +233,6 @@ function openUnlockModal(productId) {
   const p = (CATALOG||[]).find(x => x.id === productId) || FOODS.find(x => x.id === productId);
   if (!p) return;
   window._addFoodSelected = p;
-
   let modal = document.getElementById('unlock-modal');
   if (!modal) {
     modal = document.createElement('div');
@@ -273,7 +241,6 @@ function openUnlockModal(productId) {
     modal.onclick = e => { if (e.target === modal) modal.classList.remove('open'); };
     document.body.appendChild(modal);
   }
-
   modal.innerHTML = `
     <div class="modal" style="width:460px">
       <div class="modal-head">
@@ -301,7 +268,6 @@ function openUnlockModal(productId) {
         <button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="saveUnlockedFood()">Desbloquear producto</button>
       </div>
     </div>`;
-
   modal.classList.add('open');
   document.getElementById('product-modal')?.classList.remove('open');
 }
@@ -342,28 +308,115 @@ function openAddFoodModal() {
     modal = document.createElement('div');
     modal.id = 'add-food-modal';
     modal.className = 'modal-bg';
-    modal.innerHTML = `
-      <div class="modal" style="width:540px;max-height:600px">
-        <div class="modal-head">
-          <span>🔍</span>
-          <input id="add-food-search" placeholder="Buscar en catalogo Mercadona..." oninput="filterAddFood()">
-          <button class="btn btn-sm" onclick="closeAddFoodModal()">✕</button>
-        </div>
-        <div id="add-food-step1">
-          <div style="padding:8px 14px;font-size:12px;color:var(--text3)" id="add-food-status">Cargando catalogo...</div>
-          <div class="modal-body" id="add-food-results" style="max-height:360px;overflow-y:auto"></div>
-        </div>
-      </div>`;
     document.body.appendChild(modal);
   }
+  modal.innerHTML = `
+    <div class="modal" style="width:540px;max-height:600px">
+      <div class="modal-head">
+        <div style="display:flex;gap:4px;background:var(--bg);border-radius:var(--rs);padding:3px">
+          <button class="vt-btn active" id="af-tab-merc" onclick="switchAddFoodTab('merc')">🛒 Mercadona</button>
+          <button class="vt-btn" id="af-tab-custom" onclick="switchAddFoodTab('custom')">✏️ Producto propio</button>
+        </div>
+        <button class="btn btn-sm" onclick="closeAddFoodModal()">✕</button>
+      </div>
+      <div id="af-merc-tab">
+        <div style="padding:8px 12px;border-bottom:1px solid var(--border)">
+          <input id="add-food-search" placeholder="Buscar en catalogo Mercadona..." oninput="filterAddFood()"
+            style="width:100%;border:none;outline:none;font-size:14px;background:none">
+        </div>
+        <div style="padding:8px 14px;font-size:12px;color:var(--text3)" id="add-food-status">Cargando catalogo...</div>
+        <div class="modal-body" id="add-food-results" style="max-height:340px;overflow-y:auto"></div>
+      </div>
+      <div id="af-custom-tab" style="display:none;padding:16px;overflow-y:auto;max-height:520px">
+        <div class="form-group">
+          <label class="form-label">Nombre</label>
+          <input class="form-input" id="cf-name" placeholder="Ej: Proteina Whey Chocolate">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Marca (opcional)</label>
+          <input class="form-input" id="cf-brand" placeholder="Ej: MyProtein">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="form-group">
+            <label class="form-label">Precio (€)</label>
+            <input class="form-input" id="cf-price" type="number" step="0.01" placeholder="25.00">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Unidad</label>
+            <select class="form-input" id="cf-unit">
+              <option value="kg">kg</option>
+              <option value="l">l</option>
+              <option value="ud">ud</option>
+              <option value="g">g</option>
+            </select>
+          </div>
+        </div>
+        <div style="margin:4px 0 10px;font-size:12px;font-weight:600;color:var(--text2)">Macros por 100g</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="form-group"><label class="form-label">Calorias (kcal)</label><input class="form-input" id="cf-kcal" type="number" step="0.1" placeholder="380"></div>
+          <div class="form-group"><label class="form-label">Proteina (g)</label><input class="form-input" id="cf-p" type="number" step="0.1" placeholder="75"></div>
+          <div class="form-group"><label class="form-label">Carbohidratos (g)</label><input class="form-input" id="cf-c" type="number" step="0.1" placeholder="7"></div>
+          <div class="form-group"><label class="form-label">Grasas (g)</label><input class="form-input" id="cf-f" type="number" step="0.1" placeholder="6"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">URL imagen (opcional)</label>
+          <input class="form-input" id="cf-img" placeholder="https://..." oninput="previewCfImg()">
+          <div id="cf-img-preview" style="margin-top:6px"></div>
+        </div>
+        <button class="btn btn-primary" style="width:100%;margin-top:4px" onclick="saveCustomFood()">Guardar producto</button>
+      </div>
+    </div>`;
   modal.classList.add('open');
-  document.getElementById('add-food-search').value = '';
-  document.getElementById('add-food-results').innerHTML = '';
   loadFullCatalog(catalog => {
     window._addFoodCatalog = catalog;
-    document.getElementById('add-food-status').textContent = `${catalog.length} productos — busca uno para añadir sus macros`;
-    document.getElementById('add-food-search').focus();
+    const status = document.getElementById('add-food-status');
+    if (status) status.textContent = `${catalog.length} productos — busca uno para añadir sus macros`;
+    const search = document.getElementById('add-food-search');
+    if (search) search.focus();
   });
+}
+
+function previewCfImg() {
+  const val = document.getElementById('cf-img').value.trim();
+  const preview = document.getElementById('cf-img-preview');
+  if (preview) preview.innerHTML = val
+    ? `<img src="${val}" style="height:60px;object-fit:contain;border-radius:6px;background:#f9fafb;">`
+    : '';
+}
+
+function switchAddFoodTab(tab) {
+  document.getElementById('af-merc-tab').style.display = tab==='merc'?'block':'none';
+  document.getElementById('af-custom-tab').style.display = tab==='custom'?'block':'none';
+  document.getElementById('af-tab-merc').classList.toggle('active', tab==='merc');
+  document.getElementById('af-tab-custom').classList.toggle('active', tab==='custom');
+}
+
+function saveCustomFood() {
+  const name = document.getElementById('cf-name').value.trim();
+  if (!name) { showToast('El nombre es obligatorio'); return; }
+  const newFood = {
+    id: 'custom_' + Date.now(),
+    ean: '',
+    name,
+    brand: document.getElementById('cf-brand').value.trim() || 'Propio',
+    kcal:    document.getElementById('cf-kcal').value,
+    protein: document.getElementById('cf-p').value,
+    carbs:   document.getElementById('cf-c').value,
+    fat:     document.getElementById('cf-f').value,
+    fiber: '', salt: '',
+    price: parseFloat(document.getElementById('cf-price').value) || 0,
+    unit: document.getElementById('cf-unit').value,
+    unit_size: 1,
+    thumbnail: document.getElementById('cf-img').value.trim(),
+    category: 'Productos propios',
+    custom: true,
+  };
+  FOODS.push(mapProduct(newFood));
+  CUSTOM_FOODS.push(newFood);
+  save('custom_foods', CUSTOM_FOODS);
+  closeAddFoodModal();
+  showToast(`${name} añadido`);
+  renderAlimentos(document.getElementById('page-alimentos'));
 }
 
 function closeAddFoodModal() {
@@ -371,8 +424,8 @@ function closeAddFoodModal() {
 }
 
 function filterAddFood() {
-  const q = document.getElementById('add-food-search').value.toLowerCase().trim();
-  if (!q || q.length < 2) { document.getElementById('add-food-results').innerHTML = ''; return; }
+  const q = document.getElementById('add-food-search')?.value.toLowerCase().trim() || '';
+  if (q.length < 2) { document.getElementById('add-food-results').innerHTML = ''; return; }
   const catalog = window._addFoodCatalog || [];
   const existingIds = new Set(FOODS.map(f => f.id));
   const results = catalog.filter(p => !existingIds.has(p.id) &&
@@ -404,4 +457,123 @@ function addToPantryModal(foodId) {
   }
   save('pantry', PANTRY);
   showToast(`${n} pack${n!==1?'s':''} de ${f.name} añadido${n!==1?'s':''} a la despensa`);
+}
+
+function editFoodMacros(foodId) {
+  const f = FOODS.find(x => x.id === foodId);
+  if (!f) return;
+
+  document.getElementById('product-modal')?.classList.remove('open');
+
+  let modal = document.getElementById('edit-food-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'edit-food-modal';
+    modal.className = 'modal-bg';
+    modal.onclick = e => { if (e.target === modal) modal.classList.remove('open'); };
+    document.body.appendChild(modal);
+  }
+
+  modal.innerHTML = `
+    <div class="modal" style="width:460px">
+      <div class="modal-head">
+        <span>✏️ Editar alimento</span>
+        <button class="btn btn-sm" onclick="document.getElementById('edit-food-modal').classList.remove('open')">✕</button>
+      </div>
+      <div style="padding:16px">
+        <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg);border-radius:var(--rs);margin-bottom:16px">
+          ${f.thumbnail ? `<img src="${f.thumbnail}" style="width:40px;height:40px;object-fit:contain;border-radius:4px;background:white;flex-shrink:0">` : ''}
+          <div>
+            <div style="font-weight:600;font-size:13px">${f.name}</div>
+            <div style="font-size:11px;color:var(--text2)">${f.brand} · ${f.category||''}</div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Macros por 100g</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="form-group">
+            <label class="form-label">Calorias (kcal)</label>
+            <input class="form-input" id="ef-kcal" type="number" step="0.1" value="${f.kcal}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Proteina (g)</label>
+            <input class="form-input" id="ef-p" type="number" step="0.1" value="${f.p}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Carbohidratos (g)</label>
+            <input class="form-input" id="ef-c" type="number" step="0.1" value="${f.c}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Grasas (g)</label>
+            <input class="form-input" id="ef-f" type="number" step="0.1" value="${f.f}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Fibra (g)</label>
+            <input class="form-input" id="ef-fiber" type="number" step="0.1" value="${f.fiber||0}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Sal (g)</label>
+            <input class="form-input" id="ef-salt" type="number" step="0.1" value="${f.salt||0}">
+          </div>
+        </div>
+        <div id="ef-status" style="font-size:12px;color:var(--text3);margin-top:4px;min-height:18px"></div>
+        <button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="saveEditedFood('${f.id}')">Guardar cambios</button>
+      </div>
+    </div>`;
+
+  modal.classList.add('open');
+}
+
+async function saveEditedFood(foodId) {
+  const f = FOODS.find(x => x.id === foodId);
+  if (!f) return;
+
+  const updates = {
+    id:      foodId,
+    kcal:    parseFloat(document.getElementById('ef-kcal').value) || 0,
+    protein: parseFloat(document.getElementById('ef-p').value) || 0,
+    carbs:   parseFloat(document.getElementById('ef-c').value) || 0,
+    fat:     parseFloat(document.getElementById('ef-f').value) || 0,
+    fiber:   parseFloat(document.getElementById('ef-fiber').value) || 0,
+    salt:    parseFloat(document.getElementById('ef-salt').value) || 0,
+  };
+
+  // Actualizar en FOODS en memoria
+  f.kcal = updates.kcal;
+  f.p    = updates.protein;
+  f.c    = updates.carbs;
+  f.f    = updates.fat;
+
+  // Actualizar en CUSTOM_FOODS localStorage
+  const cfIdx = CUSTOM_FOODS.findIndex(x => x.id === foodId);
+  if (cfIdx >= 0) {
+    CUSTOM_FOODS[cfIdx] = {...CUSTOM_FOODS[cfIdx], ...updates};
+  } else {
+    CUSTOM_FOODS.push({...f, ...updates});
+  }
+  save('custom_foods', CUSTOM_FOODS);
+
+  // Persistir en JSON via API
+  const status = document.getElementById('ef-status');
+  if (status) status.textContent = 'Guardando en base de datos...';
+
+  const result = await apiSaveFood({
+    ...f,
+    kcal:    updates.kcal,
+    protein: updates.protein,
+    carbs:   updates.carbs,
+    fat:     updates.fat,
+    fiber:   updates.fiber,
+    salt:    updates.salt,
+  });
+
+  if (result.ok) {
+    showToast(`${f.name} actualizado`);
+    document.getElementById('edit-food-modal').classList.remove('open');
+    if (alimentosCategory) renderCategoryProducts(alimentosCategory);
+    else renderCategories();
+  } else {
+    if (status) status.textContent = '⚠️ Guardado solo en local (servidor no disponible)';
+    showToast(`${f.name} actualizado localmente`);
+    setTimeout(() => document.getElementById('edit-food-modal')?.classList.remove('open'), 1500);
+  }
 }

@@ -152,5 +152,25 @@ function pantryAdjust(foodId, delta) {
   save('pantry', PANTRY);
 }
 
+function apiSaveFood(foodData) {
+  return fetch('/api/save-food', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(foodData)
+  })
+  .then(r => r.json())
+  .catch(() => ({ok: false, error: 'Servidor no disponible'}));
+}
+
+function apiDeleteFood(foodId) {
+  return fetch('/api/delete-food', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({id: foodId})
+  })
+  .then(r => r.json())
+  .catch(() => ({ok: false}));
+}
+
 function pantryConsume(foodId, qty) { pantryAdjust(foodId, -qty); }
 function pantryRestore(foodId, qty) { pantryAdjust(foodId, qty); }

@@ -96,28 +96,47 @@ function renderObjetivosBody(profile, goals) {
         </div>
       </div>
       <div id="tdee-box">${renderTDEEBox()}</div>`;
-  } else {
-    return `
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div class="form-group">
-          <label class="form-label">Calorias (kcal)</label>
-          <input class="form-input" id="goal-kcal" type="number" value="${goals.kcal}">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Proteina (g)</label>
-          <input class="form-input" id="goal-p" type="number" value="${goals.p}">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Carbohidratos (g)</label>
-          <input class="form-input" id="goal-c" type="number" value="${goals.c}">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Grasas (g)</label>
-          <input class="form-input" id="goal-f" type="number" value="${goals.f}">
-        </div>
-      </div>
-      <button class="btn btn-primary" style="width:100%" onclick="saveGoalsManual()">Guardar objetivos</button>`;
-  }
+    } else {
+        const pPct = load('macroPct', {p:30, c:45, f:25});
+        const kcal = goals.kcal;
+        const pg = Math.round(kcal * pPct.p/100 / 4);
+        const cg = Math.round(kcal * pPct.c/100 / 4);
+        const fg = Math.round(kcal * pPct.f/100 / 9);
+        return `
+          <div class="form-group">
+            <label class="form-label">Calorias objetivo (kcal)</label>
+            <input class="form-input" id="goal-kcal" type="number" value="${kcal}" oninput="updateMacroGrams()">
+          </div>
+          <div style="margin:12px 0 4px;font-size:12px;font-weight:600;color:var(--text2)">Distribucion de macros</div>
+          <div class="form-group">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+              <label class="form-label" style="margin:0">Proteina</label>
+              <span style="font-size:12px;color:#3b82f6;font-weight:600"><span id="pct-p">${pPct.p}</span>% → <span id="g-p">${pg}</span>g</span>
+            </div>
+            <input type="range" id="range-p" min="10" max="60" value="${pPct.p}" oninput="updatePcts('p')" style="width:100%;accent-color:#3b82f6">
+          </div>
+          <div class="form-group">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+              <label class="form-label" style="margin:0">Carbohidratos</label>
+              <span style="font-size:12px;color:#10b981;font-weight:600"><span id="pct-c">${pPct.c}</span>% → <span id="g-c">${cg}</span>g</span>
+            </div>
+            <input type="range" id="range-c" min="10" max="70" value="${pPct.c}" oninput="updatePcts('c')" style="width:100%;accent-color:#10b981">
+          </div>
+          <div class="form-group">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+              <label class="form-label" style="margin:0">Grasas</label>
+              <span style="font-size:12px;color:#ef4444;font-weight:600"><span id="pct-f">${pPct.f}</span>% → <span id="g-f">${fg}</span>g</span>
+            </div>
+            <input type="range" id="range-f" min="10" max="50" value="${pPct.f}" oninput="updatePcts('f')" style="width:100%;accent-color:#ef4444">
+          </div>
+          <div style="height:8px;border-radius:4px;overflow:hidden;display:flex;margin-bottom:8px">
+            <div id="bar-p" style="height:100%;background:#3b82f6;width:${pPct.p}%;transition:width 0.2s"></div>
+            <div id="bar-c" style="height:100%;background:#10b981;width:${pPct.c}%;transition:width 0.2s"></div>
+            <div id="bar-f" style="height:100%;background:#ef4444;width:${pPct.f}%;transition:width 0.2s"></div>
+          </div>
+          <div id="pct-warning" style="font-size:11px;color:var(--red);margin-bottom:8px;display:none"></div>
+          <button class="btn btn-primary" style="width:100%" onclick="saveGoalsManual()">Guardar objetivos</button>`;
+      }
 }
 
 function renderTDEEBox() {
@@ -246,14 +265,54 @@ function saveProfile() {
   recalcTDEE();
 }
 
+function updatePcts(changed) {
+  const p = parseInt(document.getElementById('range-p').value);
+  const c = parseInt(document.getElementById('range-c').value);
+  const f = parseInt(document.getElementById('range-f').value);
+  const total = p + c + f;
+  document.getElementById('pct-p').textContent = p;
+  document.getElementById('pct-c').textContent = c;
+  document.getElementById('pct-f').textContent = f;
+  document.getElementById('bar-p').style.width = p + '%';
+  document.getElementById('bar-c').style.width = c + '%';
+  document.getElementById('bar-f').style.width = f + '%';
+  const warn = document.getElementById('pct-warning');
+  warn.style.display = total !== 100 ? 'block' : 'none';
+  warn.textContent = `Los porcentajes suman ${total}% (deben ser 100%)`;
+  save('macroPct', {p, c, f});
+  updateMacroGrams();
+}
+
+function updateMacroGrams() {
+  const kcal = parseInt(document.getElementById('goal-kcal')?.value) || 2200;
+  const p = parseInt(document.getElementById('range-p')?.value) || 30;
+  const c = parseInt(document.getElementById('range-c')?.value) || 45;
+  const f = parseInt(document.getElementById('range-f')?.value) || 25;
+  const gp = document.getElementById('g-p');
+  const gc = document.getElementById('g-c');
+  const gf = document.getElementById('g-f');
+  if (gp) gp.textContent = Math.round(kcal * p/100 / 4);
+  if (gc) gc.textContent = Math.round(kcal * c/100 / 4);
+  if (gf) gf.textContent = Math.round(kcal * f/100 / 9);
+}
+
 function saveGoalsManual() {
+  const kcal = parseInt(document.getElementById('goal-kcal').value) || 2200;
+  const p = parseInt(document.getElementById('range-p')?.value) || 30;
+  const c = parseInt(document.getElementById('range-c')?.value) || 45;
+  const f = parseInt(document.getElementById('range-f')?.value) || 25;
+  if (p + c + f !== 100) {
+    showToast('Los porcentajes deben sumar 100%');
+    return;
+  }
   const goals = {
-    kcal: parseInt(document.getElementById('goal-kcal').value)||2200,
-    p:    parseInt(document.getElementById('goal-p').value)||160,
-    c:    parseInt(document.getElementById('goal-c').value)||220,
-    f:    parseInt(document.getElementById('goal-f').value)||70,
+    kcal,
+    p: Math.round(kcal * p/100 / 4),
+    c: Math.round(kcal * c/100 / 4),
+    f: Math.round(kcal * f/100 / 9),
   };
   save('goals', goals);
+  save('macroPct', {p, c, f});
   Object.assign(GOALS, goals);
   showToast('Objetivos guardados');
 }
