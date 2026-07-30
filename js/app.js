@@ -205,7 +205,7 @@ function saveDiet() {
   showToast(`Dieta "${name}" guardada`);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+function initApp() {
   document.getElementById('modal-search').addEventListener('keydown', e => {
     if (e.key === 'Enter') confirmAdd();
   });
@@ -215,4 +215,11 @@ document.addEventListener('DOMContentLoaded', () => {
       render('dashboard');
     });
   });
-});
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  // El documento ya estaba listo (auth.js retrasó la carga de este script
+  // hasta despues de resolver login/sincronizacion), asi que arrancamos ya.
+  initApp();
+}

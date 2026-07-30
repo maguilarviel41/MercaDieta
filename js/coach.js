@@ -89,7 +89,7 @@ async function runCoachLoop() {
     let keepGoing = true;
     let safety = 0;
 
-    while (keepGoing && safety < 8) {
+    while (keepGoing && safety < 20) {
       safety++;
       const res = await fetch('/api/chat', {
         method: 'POST',
@@ -181,7 +181,9 @@ function addCoachActionCard(toolName, input, result) {
     text = `Dia ${input.dia} vaciado`;
   } else if (toolName === 'buscar_alimentos') {
     icon = '🔍';
-    text = `Buscando "${input.query}" — ${(result.resultados||[]).length} resultados`;
+    const queries = input.queries || [];
+    const total = Object.values(result.resultados || {}).reduce((sum, arr) => sum + arr.length, 0);
+    text = `Buscando ${queries.map(q => `"${q}"`).join(', ')} — ${total} resultados`;
   } else if (toolName === 'ver_perfil') {
     icon = '👁️';
     text = `Perfil consultado`;
@@ -199,10 +201,14 @@ function addCoachActionCard(toolName, input, result) {
 async function executeCoachTool(name, input) {
   switch (name) {
     case 'buscar_alimentos': {
-      const q = (input.query || '').toLowerCase();
-      const results = FOODS.filter(f => f.name.toLowerCase().includes(q)).slice(0, 8)
-        .map(f => ({id: f.id, name: f.name, kcal: f.kcal, protein: f.p, carbs: f.c, fat: f.f, price: f.price, unit: f.unit}));
-      return {resultados: results};
+      const queries = input.queries || (input.query ? [input.query] : []);
+      const resultados = {};
+      for (const query of queries) {
+        const q = (query || '').toLowerCase();
+        resultados[query] = FOODS.filter(f => f.name.toLowerCase().includes(q)).slice(0, 8)
+          .map(f => ({id: f.id, name: f.name, kcal: f.kcal, protein: f.p, carbs: f.c, fat: f.f, price: f.price, unit: f.unit}));
+      }
+      return {resultados};
     }
     case 'ver_perfil': {
       return {

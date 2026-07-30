@@ -1,5 +1,6 @@
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 import json, os, requests
+import db_layer
 
 CACHE_FILE = 'data/categorias_cache.json'
 PORT = int(os.environ.get('PORT', 8080))
@@ -35,11 +36,17 @@ Reglas importantes:
 COACH_TOOLS = [
     {
         "name": "buscar_alimentos",
-        "description": "Busca alimentos reales en la base de datos de la app por nombre. Devuelve hasta 8 resultados con su id, nombre, macros por 100g y precio.",
+        "description": "Busca alimentos reales en la base de datos de la app por nombre. Acepta varias queries a la vez (una por cada ingrediente que necesites) para no gastar turnos buscando uno a uno. Devuelve hasta 8 resultados por query, con su id, nombre, macros por 100g y precio.",
         "input_schema": {
             "type": "object",
-            "properties": {"query": {"type": "string", "description": "Texto a buscar, ej: 'pechuga de pollo'"}},
-            "required": ["query"]
+            "properties": {
+                "queries": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Lista de textos a buscar, ej: ['pechuga de pollo', 'arroz', 'brocoli']"
+                }
+            },
+            "required": ["queries"]
         }
     },
     {
@@ -138,6 +145,12 @@ class MercaDietaHandler(SimpleHTTPRequestHandler):
         self._cors()
         self.end_headers()
 
+    def do_GET(self):
+        if self.path == '/api/data/all':
+            self._get_all_data()
+        else:
+            super().do_GET()
+
     def do_POST(self):
         if self.path == '/api/save-food':
             self._save_food()
@@ -145,9 +158,95 @@ class MercaDietaHandler(SimpleHTTPRequestHandler):
             self._delete_food()
         elif self.path == '/api/chat':
             self._chat()
+        elif self.path == '/api/register':
+            self._register()
+        elif self.path == '/api/login':
+            self._login()
+        elif self.path == '/api/logout':
+            self._logout()
+        elif self.path == '/api/data':
+            self._set_data()
         else:
             self.send_response(404)
             self.end_headers()
+
+    # ── Auth y sincronizacion de datos ──────────────────────────────────
+
+    def _read_json_body(self):
+        length = int(self.headers.get('Content-Length', 0))
+        return json.loads(self.rfile.read(length)) if length else {}
+
+    def _bearer_token(self):
+        auth = self.headers.get('Authorization', '')
+        if auth.startswith('Bearer '):
+            return auth[len('Bearer '):].strip()
+        return None
+
+    def _require_user(self):
+        """Devuelve el user_id del token, o None y ya envia un 401."""
+        token = self._bearer_token()
+        try:
+            user_id = db_layer.user_id_from_token(token)
+        except RuntimeError as e:
+            self._json({'ok': False, 'error': str(e)}, status=503)
+            return None
+        if not user_id:
+            self._json({'ok': False, 'error': 'No autenticado'}, status=401)
+            return None
+        return user_id
+
+    def _register(self):
+        try:
+            data = self._read_json_body()
+            result = db_layer.create_user(data.get('email', ''), data.get('password', ''))
+            self._json(result, status=200 if result.get('ok') else 400)
+        except RuntimeError as e:
+            self._json({'ok': False, 'error': str(e)}, status=503)
+        except Exception as e:
+            self._json({'ok': False, 'error': str(e)}, status=500)
+
+    def _login(self):
+        try:
+            data = self._read_json_body()
+            result = db_layer.verify_user(data.get('email', ''), data.get('password', ''))
+            self._json(result, status=200 if result.get('ok') else 401)
+        except RuntimeError as e:
+            self._json({'ok': False, 'error': str(e)}, status=503)
+        except Exception as e:
+            self._json({'ok': False, 'error': str(e)}, status=500)
+
+    def _logout(self):
+        token = self._bearer_token()
+        try:
+            if token:
+                db_layer.delete_session(token)
+        except Exception:
+            pass
+        self._json({'ok': True})
+
+    def _get_all_data(self):
+        user_id = self._require_user()
+        if user_id is None:
+            return
+        try:
+            data = db_layer.get_all_data(user_id)
+            self._json(data)
+        except Exception as e:
+            self._json({'ok': False, 'error': str(e)}, status=500)
+
+    def _set_data(self):
+        user_id = self._require_user()
+        if user_id is None:
+            return
+        try:
+            body = self._read_json_body()
+            key = body.get('key')
+            if not key:
+                return self._json({'ok': False, 'error': 'Sin key'}, status=400)
+            db_layer.set_data(user_id, key, body.get('value'))
+            self._json({'ok': True})
+        except Exception as e:
+            self._json({'ok': False, 'error': str(e)}, status=500)
 
     def _chat(self):
         try:
@@ -164,7 +263,7 @@ class MercaDietaHandler(SimpleHTTPRequestHandler):
                 },
                 json={
                     'model': 'claude-sonnet-5',
-                    'max_tokens': 2048,
+                    'max_tokens': 4096,
                     'system': COACH_SYSTEM_PROMPT,
                     'tools': COACH_TOOLS,
                     'messages': messages,
@@ -214,9 +313,9 @@ class MercaDietaHandler(SimpleHTTPRequestHandler):
         except Exception as e:
             self._json({'ok': False, 'error': str(e)})
 
-    def _json(self, data):
+    def _json(self, data, status=200):
         body = json.dumps(data).encode()
-        self.send_response(200)
+        self.send_response(status)
         self._cors()
         self.send_header('Content-Type', 'application/json')
         self.send_header('Content-Length', len(body))
@@ -226,7 +325,7 @@ class MercaDietaHandler(SimpleHTTPRequestHandler):
     def _cors(self):
         self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
 
     def log_message(self, format, *args):
         if args and (str(args[1]) != '200' or '/api/' in str(args[0])):
@@ -234,5 +333,6 @@ class MercaDietaHandler(SimpleHTTPRequestHandler):
 
 if __name__ == '__main__':
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
+    db_layer.init_db()
     print(f'MercaDieta server en http://localhost:{PORT}')
     HTTPServer(('', PORT), MercaDietaHandler).serve_forever()

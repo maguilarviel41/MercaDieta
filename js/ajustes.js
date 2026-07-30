@@ -5,7 +5,24 @@ function renderAjustes(el) {
   const goals   = load('goals', {kcal:2200, p:160, c:220, f:70});
   const weights = load('weights', []);
 
+  const loggedIn = typeof MercaDietaAuth !== 'undefined' && MercaDietaAuth.isLoggedIn();
+  const accountEmail = loggedIn ? MercaDietaAuth.getEmail() : '';
+
   el.innerHTML = `
+    <div class="card" style="margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div>
+        <div class="card-title" style="margin-bottom:2px">Cuenta</div>
+        <div style="font-size:13px;color:var(--text2)">
+          ${loggedIn
+            ? `Conectado como <strong>${accountEmail}</strong> — tus datos se sincronizan entre dispositivos.`
+            : `Usando MercaDieta solo en este dispositivo. Crea una cuenta para tener tus datos en todos tus dispositivos.`}
+        </div>
+      </div>
+      ${loggedIn
+        ? `<button class="btn btn-sm" onclick="MercaDietaAuth.logout()">Cerrar sesion</button>`
+        : `<button class="btn btn-primary btn-sm" onclick="MercaDietaAuth.showOverlayForLogin()">Iniciar sesion</button>`}
+    </div>
+
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
 
       <div class="card">

@@ -11,9 +11,22 @@ const GOALS = load('goals', {kcal:2200, p:160, c:220, f:70});
 // ── localStorage ──────────────────────────────────────────────────────────
 function save(key, val) {
   try { localStorage.setItem('md_'+key, JSON.stringify(val)); } catch(e) {}
+  syncKeyToServer(key, val);
 }
 function load(key, def) {
   try { const v = localStorage.getItem('md_'+key); return v ? JSON.parse(v) : def; } catch(e) { return def; }
+}
+// Envia esta clave al servidor en segundo plano si hay sesion iniciada.
+// No bloquea ni afecta al guardado local: si falla (sin conexion, sin
+// cuenta, servidor caido) simplemente no sincroniza esa vez.
+function syncKeyToServer(key, val) {
+  const token = localStorage.getItem('mercadieta_token');
+  if (!token) return;
+  fetch('/api/data', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token},
+    body: JSON.stringify({key, value: val}),
+  }).catch(() => {});
 }
 
 // ── Estado global ─────────────────────────────────────────────────────────
