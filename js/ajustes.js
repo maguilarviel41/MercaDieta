@@ -23,7 +23,7 @@ function renderAjustes(el) {
         : `<button class="btn btn-primary btn-sm" onclick="MercaDietaAuth.showOverlayForLogin()">Iniciar sesion</button>`}
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+    <div class="grid-2" style="margin-bottom:16px">
 
       <div class="card">
         <div class="card-title">Mi perfil</div>
@@ -31,7 +31,7 @@ function renderAjustes(el) {
           <label class="form-label">Nombre</label>
           <input class="form-input" id="pf-nombre" value="${profile.nombre}" placeholder="Tu nombre">
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="grid-2-sm">
           <div class="form-group">
             <label class="form-label">Peso (kg)</label>
             <input class="form-input" id="pf-peso" type="number" step="0.1" value="${profile.peso}" placeholder="70">
@@ -67,7 +67,7 @@ function renderAjustes(el) {
 
     <div class="card">
       <div class="card-title">Registro de peso</div>
-      <div style="display:grid;grid-template-columns:1fr 1.8fr;gap:20px;align-items:start">
+      <div class="grid-profile">
         <div>
           <div style="display:flex;gap:8px;margin-bottom:12px;align-items:flex-end">
             <div class="form-group" style="margin:0;flex:1">
@@ -175,7 +175,7 @@ function renderTDEEBox() {
   const carb = Math.max(0, Math.round((kcal - prot*4 - fat*9) / 4));
   return `
     <div style="background:var(--green-light);border:1px solid var(--green);border-radius:var(--rs);padding:12px;margin-top:8px">
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center;margin-bottom:10px">
+      <div class="grid-4-sm" style="text-align:center;margin-bottom:10px">
         <div><div style="font-size:18px;font-weight:700;color:var(--green)">${kcal}</div><div style="font-size:10px;color:var(--green)">kcal</div></div>
         <div><div style="font-size:18px;font-weight:700;color:#3b82f6">${prot}g</div><div style="font-size:10px;color:#3b82f6">prot</div></div>
         <div><div style="font-size:18px;font-weight:700;color:#10b981">${carb}g</div><div style="font-size:10px;color:#10b981">carbs</div></div>

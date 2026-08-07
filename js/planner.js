@@ -241,7 +241,7 @@ function openAddMealTypeModal() {
   const customs = getCustomMeals();
 
   modal.innerHTML = `
-    <div class="modal" style="width:400px">
+    <div class="modal" style="--modal-w:400px">
       <div class="modal-head">
         <span style="font-weight:600">Nuevo tipo de comida</span>
         <button class="btn btn-sm" onclick="document.getElementById('meal-type-modal').classList.remove('open')">✕</button>

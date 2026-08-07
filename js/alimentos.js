@@ -250,7 +250,7 @@ function openProductModal(foodId, hasMacros) {
   let macrosHTML = '';
   if (hasMacros) {
     macrosHTML = `
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">
+    <div class="grid-4-sm" style="margin-bottom:16px">
       <div style="text-align:center;background:var(--bg);border-radius:var(--rs);padding:10px"><div style="font-size:20px;font-weight:700;color:#f59e0b">${f.kcal||'—'}</div><div style="font-size:10px;color:var(--text3)">kcal</div></div>
       <div style="text-align:center;background:var(--bg);border-radius:var(--rs);padding:10px"><div style="font-size:20px;font-weight:700;color:#3b82f6">${f.p||f.protein||'—'}g</div><div style="font-size:10px;color:var(--text3)">proteina</div></div>
       <div style="text-align:center;background:var(--bg);border-radius:var(--rs);padding:10px"><div style="font-size:20px;font-weight:700;color:#10b981">${f.c||f.carbs||'—'}g</div><div style="font-size:10px;color:var(--text3)">carbos</div></div>
@@ -275,7 +275,7 @@ function openProductModal(foodId, hasMacros) {
   }
 
   modal.innerHTML = `
-    <div class="modal" style="width:520px;max-height:85vh;overflow-y:auto">
+    <div class="modal" style="--modal-w:520px;max-height:85vh;overflow-y:auto">
       <div class="modal-head">
         <span style="font-weight:600;font-size:14px">${f.name}</span>
         <button class="btn btn-sm" onclick="document.getElementById('product-modal').classList.remove('open')">✕</button>
@@ -331,7 +331,7 @@ function openUnlockModal(productId) {
     document.body.appendChild(modal);
   }
   modal.innerHTML = `
-    <div class="modal" style="width:460px">
+    <div class="modal" style="--modal-w:460px">
       <div class="modal-head">
         <span>🔓</span>
         <span style="font-weight:500;font-size:13px">Añadir macros</span>
@@ -346,7 +346,7 @@ function openUnlockModal(productId) {
           </div>
         </div>
         <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Introduce los macros por 100g (los encontraras en el envase)</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="grid-2-sm">
           <div class="form-group"><label class="form-label">Calorias (kcal)</label><input class="form-input" id="ul-kcal" type="number" step="0.1" placeholder="344"></div>
           <div class="form-group"><label class="form-label">Proteina (g)</label><input class="form-input" id="ul-p" type="number" step="0.1" placeholder="8.2"></div>
           <div class="form-group"><label class="form-label">Carbohidratos (g)</label><input class="form-input" id="ul-c" type="number" step="0.1" placeholder="75"></div>
@@ -400,7 +400,7 @@ function openAddFoodModal() {
     document.body.appendChild(modal);
   }
   modal.innerHTML = `
-    <div class="modal" style="width:540px;max-height:600px">
+    <div class="modal" style="--modal-w:540px;--modal-mh:600px">
       <div class="modal-head">
         <div style="display:flex;gap:4px;background:var(--bg);border-radius:var(--rs);padding:3px">
           <button class="vt-btn active" id="af-tab-merc" onclick="switchAddFoodTab('merc')">🛒 Mercadona</button>
@@ -425,7 +425,7 @@ function openAddFoodModal() {
           <label class="form-label">Marca (opcional)</label>
           <input class="form-input" id="cf-brand" placeholder="Ej: MyProtein">
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="grid-2-sm">
           <div class="form-group">
             <label class="form-label">Precio (€)</label>
             <input class="form-input" id="cf-price" type="number" step="0.01" placeholder="25.00">
@@ -441,7 +441,7 @@ function openAddFoodModal() {
           </div>
         </div>
         <div style="margin:4px 0 10px;font-size:12px;font-weight:600;color:var(--text2)">Macros por 100g</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="grid-2-sm">
           <div class="form-group"><label class="form-label">Calorias (kcal)</label><input class="form-input" id="cf-kcal" type="number" step="0.1" placeholder="380"></div>
           <div class="form-group"><label class="form-label">Proteina (g)</label><input class="form-input" id="cf-p" type="number" step="0.1" placeholder="75"></div>
           <div class="form-group"><label class="form-label">Carbohidratos (g)</label><input class="form-input" id="cf-c" type="number" step="0.1" placeholder="7"></div>
@@ -564,7 +564,7 @@ function editFoodMacros(foodId) {
   }
 
   modal.innerHTML = `
-    <div class="modal" style="width:460px">
+    <div class="modal" style="--modal-w:460px">
       <div class="modal-head">
         <span>✏️ Editar alimento</span>
         <button class="btn btn-sm" onclick="document.getElementById('edit-food-modal').classList.remove('open')">✕</button>
@@ -578,7 +578,7 @@ function editFoodMacros(foodId) {
           </div>
         </div>
         <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Macros por 100g</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="grid-2-sm">
           <div class="form-group">
             <label class="form-label">Calorias (kcal)</label>
             <input class="form-input" id="ef-kcal" type="number" step="0.1" value="${f.kcal}">
@@ -792,7 +792,7 @@ function openNonFoodModal(productId) {
   }
 
   modal.innerHTML = `
-    <div class="modal" style="width:480px;max-height:80vh;overflow-y:auto">
+    <div class="modal" style="--modal-w:480px;max-height:80vh;overflow-y:auto">
       <div class="modal-head">
         <span style="font-weight:600;font-size:14px">${p.name}</span>
         <button class="btn btn-sm" onclick="document.getElementById('product-modal').classList.remove('open')">✕</button>

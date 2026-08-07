@@ -78,7 +78,7 @@ function createFolder() {
     '🍞','🍕','🍰','🥤','🍜','🥘','🍳','🥪','🍲','⭐','📁','💪','🔥','❤️'];
 
   modal.innerHTML = `
-    <div class="modal" style="width:420px">
+    <div class="modal" style="--modal-w:420px">
       <div class="modal-head">
         <span style="font-weight:600">Nueva carpeta</span>
         <button class="btn btn-sm" onclick="document.getElementById('folder-emoji-modal').classList.remove('open')">✕</button>
@@ -272,7 +272,7 @@ function editRecipe(id) {
     folders.map(f => `<option value="${f.id}" ${r.folder===f.id?'selected':''}>${f.icon} ${f.name}</option>`).join('');
 
   modal.innerHTML = `
-    <div class="modal" style="width:500px;max-height:85vh;overflow-y:auto">
+    <div class="modal" style="--modal-w:500px;max-height:85vh;overflow-y:auto">
       <div class="modal-head">
         <span style="font-weight:600">Editar comida</span>
         <button class="btn btn-sm" onclick="document.getElementById('edit-recipe-modal').classList.remove('open')">✕</button>
@@ -293,7 +293,7 @@ function editRecipe(id) {
 
         <div style="background:var(--green-light);border:1px solid var(--green);border-radius:var(--rs);padding:12px;margin-bottom:16px">
           <div style="font-size:11px;font-weight:600;color:var(--green);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Macros totales (calculados automaticamente)</div>
-          <div id="recipe-macro-totals" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center"></div>
+          <div id="recipe-macro-totals" class="grid-4-sm" style="text-align:center"></div>
         </div>
 
         <button class="btn btn-primary" style="width:100%" onclick="saveEditRecipe('${r.id}')">Guardar cambios</button>

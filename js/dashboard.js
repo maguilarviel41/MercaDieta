@@ -115,7 +115,7 @@ function renderWeeklySpend() {
     <span style="font-size:18px;font-weight:700;color:var(--green)">${total.toFixed(2)}€</span>
   </div>
   <div style="display:flex;gap:6px;height:120px;align-items:flex-end;margin-bottom:12px">${bars}</div>
-  <div style="border-top:1px solid var(--border);padding-top:10px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center">
+  <div class="grid-3" style="border-top:1px solid var(--border);padding-top:10px;text-align:center">
     <div>
       <div style="font-size:18px;font-weight:700;color:var(--green)">${total.toFixed(2)}€</div>
       <div style="font-size:10px;color:var(--text3)">total semana</div>
@@ -186,7 +186,7 @@ function renderDashboard(el) {
       ${macroTileHTML('Carbohidratos', tc, GOALS.c, 'g', '#10b981')}
       ${macroTileHTML('Grasas', tf, GOALS.f, 'g', '#ef4444')}
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+    <div class="grid-2" style="margin-bottom:16px">
       <div class="card">
         <div class="card-title">Distribucion de macros — hoy</div>
         ${renderDonut(tk, tp, tc, tf)}
@@ -196,7 +196,7 @@ function renderDashboard(el) {
         ${weekHTML}
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:16px">
+    <div class="grid-side">
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
           <div class="card-title" style="margin:0">Mi despensa</div>

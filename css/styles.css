@@ -19,7 +19,7 @@
   --r: 10px;
   --rs: 6px;
 }
-body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; display: flex; min-height: 100vh; }
+body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; display: flex; min-height: 100vh; overflow-x: hidden; }
 button { font-family: inherit; cursor: pointer; }
 input { font-family: inherit; }
 
@@ -193,9 +193,13 @@ input { font-family: inherit; }
 .rc-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(280px,1fr)); gap: 12px; }
 
 /* ── Modal ── */
-.modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 100; align-items: center; justify-content: center; }
+.modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 100; align-items: center; justify-content: center; padding: 16px; }
 .modal-bg.open { display: flex; }
-.modal { background: var(--surface); border-radius: var(--r); width: 460px; max-height: 520px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.15); }
+/* Ancho fluido: cada pantalla pide su ancho "ideal" de escritorio con la
+   variable --modal-w (ej. style="--modal-w:520px"), pero el modal nunca
+   supera el 92% del ancho visible, en cualquier dispositivo. Sin esto,
+   un modal pedido a 520px se saldria de un movil de 375px de ancho. */
+.modal { background: var(--surface); border-radius: var(--r); width: min(92vw, var(--modal-w, 460px)); max-height: min(88vh, var(--modal-mh, 520px)); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.15); }
 .modal-head { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; gap: 10px; align-items: center; }
 .modal-head input { flex: 1; border: none; outline: none; font-size: 14px; }
 .modal-body { flex: 1; overflow-y: auto; padding: 6px; max-height: 360px; }
@@ -229,6 +233,18 @@ select.form-input { cursor: pointer; }
 .donut-val { font-size: 13px; font-weight: 600; }
 .donut-pct { font-size: 11px; color: var(--text3); min-width: 32px; text-align: right; }
 
+/* ── Grid utilities ── */
+/* Sustituyen a los style="display:grid;grid-template-columns:..." repetidos
+   por las pantallas — una sola definicion, y el comportamiento en movil se
+   arregla aqui una vez en vez de en cada sitio donde se usa. */
+.grid-2      { display: grid; grid-template-columns: repeat(2,1fr); gap: 16px; }
+.grid-2-sm   { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; }
+.grid-3      { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+.grid-4      { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+.grid-4-sm   { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+.grid-side   { display: grid; grid-template-columns: 1.5fr 1fr; gap: 16px; }
+.grid-profile{ display: grid; grid-template-columns: 1fr 1.8fr; gap: 20px; align-items: start; }
+
 /* ── Responsive mobile ── */
 @media (max-width: 768px) {
   .sidebar { transform: translateX(-100%); }
@@ -238,7 +254,16 @@ select.form-input { cursor: pointer; }
   .macro-grid { grid-template-columns: repeat(2,1fr); }
   .dash-grid { grid-template-columns: 1fr; }
   .day-totals-grid { grid-template-columns: repeat(2,1fr); }
-  .foods-grid { grid-template-columns: repeat(auto-fill,minmax(160px,1fr)); }
+  .foods-grid { grid-template-columns: repeat(auto-fill,minmax(140px,1fr)); }
   .page { padding: 14px; }
   .topbar { padding: 0 14px; }
+  .modal-foot { flex-wrap: wrap; }
+  .modal-head { flex-wrap: wrap; }
+  .pantry-table { display: block; overflow-x: auto; white-space: nowrap; }
+  .topbar-actions { flex-wrap: wrap; justify-content: flex-end; }
+
+  .grid-2, .grid-2-sm, .grid-3, .grid-side, .grid-profile { grid-template-columns: 1fr; }
+  /* Filas de 4 numeros (macros, stats) se leen mejor en 2x2 que en una
+     columna larga de 4 filas sueltas. */
+  .grid-4, .grid-4-sm { grid-template-columns: repeat(2,1fr); }
 }

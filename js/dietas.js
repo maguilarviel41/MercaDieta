@@ -110,7 +110,7 @@ function previewDiet(dietId) {
   }).join('');
 
   modal.innerHTML = `
-    <div class="modal" style="width:480px;max-height:80vh;overflow-y:auto">
+    <div class="modal" style="--modal-w:480px;max-height:80vh;overflow-y:auto">
       <div class="modal-head">
         <span style="font-weight:600">${diet.name}</span>
         <button class="btn btn-sm" onclick="document.getElementById('diet-preview-modal').classList.remove('open')">✕</button>

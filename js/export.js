@@ -144,7 +144,7 @@ function exportRecipesPDF() {
     document.body.appendChild(modal);
   }
   modal.innerHTML = `
-    <div class="modal" style="width:420px;max-height:80vh;overflow-y:auto">
+    <div class="modal" style="--modal-w:420px;max-height:80vh;overflow-y:auto">
       <div class="modal-head">
         <span style="font-weight:600">Exportar recetas a PDF</span>
         <button class="btn btn-sm" onclick="document.getElementById('export-recipes-modal').classList.remove('open')">✕</button>
