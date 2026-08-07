@@ -40,7 +40,7 @@ input { font-family: inherit; }
 .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 40; }
 .overlay.open { display: block; }
 
-.logo { padding: 0 16px; height: 54px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+.logo { padding: 0 16px; padding-top: env(safe-area-inset-top); height: calc(54px + env(safe-area-inset-top)); display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
 .logo-brand { display: flex; align-items: center; gap: 8px; }
 .logo-icon { width: 28px; height: 28px; background: var(--green); border-radius: 6px; display: flex; align-items: center; justify-content: center; }
 .logo-icon svg { width: 18px; height: 18px; fill: white; }
@@ -59,7 +59,7 @@ input { font-family: inherit; }
 .main { margin-left: var(--sidebar); flex: 1; display: flex; flex-direction: column; transition: margin-left 0.25s ease; }
 .main.full { margin-left: 0; }
 
-.topbar { background: var(--surface); border-bottom: 3px solid var(--green); padding: 0 20px; height: 54px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 5; }
+.topbar { background: var(--surface); border-bottom: 3px solid var(--green); padding: 0 20px; padding-top: env(safe-area-inset-top); height: calc(54px + env(safe-area-inset-top)); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 5; }
 .topbar-left { display: flex; align-items: center; gap: 12px; }
 .hamburger { background: none; border: none; padding: 6px; border-radius: var(--rs); cursor: pointer; color: var(--text2); display: flex; flex-direction: column; gap: 4px; }
 .hamburger span { display: block; width: 20px; height: 2px; background: currentColor; border-radius: 2px; transition: all 0.2s; }
