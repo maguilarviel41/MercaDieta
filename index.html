@@ -2,9 +2,15 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>MercaDieta</title>
 <link rel="icon" href="https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/1f957.svg">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2e7d32">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MercaDieta">
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -104,6 +110,17 @@ function closeSidebar() {
 document.addEventListener('click', e => {
   if (e.target.closest('.nav-item') && window.innerWidth <= 768) closeSidebar();
 });
+
+// Registro del service worker (PWA). Si falla (navegador sin soporte, http
+// sin TLS, etc.) la app sigue funcionando exactamente igual, solo sin la
+// parte de instalacion/offline.
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(err => {
+      console.warn('No se pudo registrar el service worker (la app funciona igual, sin modo offline):', err);
+    });
+  });
+}
 </script>
 
 </body>
