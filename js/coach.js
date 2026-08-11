@@ -91,11 +91,20 @@ async function runCoachLoop() {
 
     while (keepGoing && safety < 20) {
       safety++;
-      const res = await fetch('/api/chat', {
+      const httpRes = await fetch((window.API_BASE || '') + '/api/chat', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({messages: coachMessages})
-      }).then(r => r.json());
+      });
+
+      if (!httpRes.ok) {
+        const isTimeout = httpRes.status === 502 || httpRes.status === 504;
+        throw new Error(isTimeout
+          ? 'El servidor tardó demasiado en responder (probablemente por una tarea muy grande de golpe). Lo que ya se aplicó antes de este punto se ha guardado — escribe "continua" para seguir con el resto.'
+          : `Error del servidor (${httpRes.status}).`);
+      }
+
+      const res = await httpRes.json();
 
       if (res.error) {
         statusEl?.remove();
@@ -134,7 +143,9 @@ async function runCoachLoop() {
     }
   } catch (e) {
     statusEl?.remove();
-    addCoachBubble('assistant', 'Error de conexion: ' + e.message);
+    addCoachBubble('assistant', e.message.startsWith('El servidor') || e.message.startsWith('Error del servidor')
+      ? e.message
+      : 'Error de conexion: ' + e.message);
   }
 
   document.querySelectorAll('.coach-status').forEach(s => s.remove());

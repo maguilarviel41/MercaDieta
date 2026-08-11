@@ -31,6 +31,13 @@ Reglas importantes:
 - Explica brevemente tus decisiones nutricionales cuando diseñes algo.
 - Los dias validos son: Lun, Mar, Mie, Jue, Vie, Sab, Dom.
 - Las cantidades de alimentos siempre son en gramos.
+- IMPORTANTE — trabaja en lotes pequeños, NUNCA generes mas de ~8-10 llamadas a
+  herramientas en un mismo turno. Si vas a aplicar una dieta semanal completa,
+  hazlo dia por dia: aplica un dia (vaciar_dia + anadir_a_comida de sus comidas),
+  termina tu turno ahi, y continua con el siguiente dia en el siguiente turno.
+  Un turno con demasiadas llamadas tarda mucho en generarse y puede hacer que
+  la peticion falle por timeout antes de completarse — trocear el trabajo evita
+  ese problema y da feedback mas rapido al usuario.
 """
 
 COACH_TOOLS = [
@@ -166,6 +173,8 @@ class MercaDietaHandler(SimpleHTTPRequestHandler):
             self._logout()
         elif self.path == '/api/data':
             self._set_data()
+        elif self.path == '/api/data/bulk':
+            self._set_all_data()
         else:
             self.send_response(404)
             self.end_headers()
@@ -245,6 +254,18 @@ class MercaDietaHandler(SimpleHTTPRequestHandler):
                 return self._json({'ok': False, 'error': 'Sin key'}, status=400)
             db_layer.set_data(user_id, key, body.get('value'))
             self._json({'ok': True})
+        except Exception as e:
+            self._json({'ok': False, 'error': str(e)}, status=500)
+
+    def _set_all_data(self):
+        user_id = self._require_user()
+        if user_id is None:
+            return
+        try:
+            body = self._read_json_body()
+            data = body.get('data', {})
+            db_layer.set_all_data(user_id, data)
+            self._json({'ok': True, 'count': len(data)})
         except Exception as e:
             self._json({'ok': False, 'error': str(e)}, status=500)
 
